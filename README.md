@@ -20,9 +20,11 @@ Designed for single-piece, **100% support-free FDM 3D printing**, rock-solid des
   * Added parametric front nameplate personalization (`custom_name = "TUMESH"`).
   * Debossed $0.8\text{ mm}$ into the $8\text{ mm}$ tall vertical front face of the dock base ($Z = 6.0\text{ mm}$). Prints $100\%$ support-free with clean perimeter lines on Bambu Lab A1 Mini.
   * Supports toggling between debossed (engraved) and embossed (raised) styles.
-* **Interactive 3D Customizer Webapp (`index.html`):**
-  * Built an interactive Three.js 3D web application with real-time orbit controls, device ghost previews, live MagSafe alignment math, parametric sliders, and instant `.scad` code generation.
-  * Run locally via `python start_webapp.py` or double-click `index.html`. Deployable directly to GitHub Pages.
+* **Interactive 3D Customizer Webapp (Live at [tumesh007.github.io/boAt-PB331-Galaxy-S25-Dock](https://tumesh007.github.io/boAt-PB331-Galaxy-S25-Dock/)):**
+  * Interactive Three.js 3D web application with real-time orbit controls, self-hosted 3D engine, device ghost previews, live MagSafe alignment math, parametric sliders, and instant `.scad` code export.
+  * Run locally via `python start_webapp.py`, double-click `index.html`, or access live online via GitHub Pages.
+
+  ![3D Customizer Webapp](images/webapp_3d_customizer.png)
 * **Dedicated Galaxy S25 Wired Charging Cutout ($X = 0\text{ mm}$):**
   * Added an $18.0\text{ mm} \times 12.0\text{ mm}$ vertical pass-through slot directly beneath the Galaxy S25's USB-C charging port.
   * Cuts cleanly through the forward resting shelf and internal sloped pedestal into the under-base channel, providing ample clearance for rigid USB-C connector housings ($25 - 30\text{ mm}$ long).
