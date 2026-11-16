@@ -28,7 +28,7 @@ The parametric model includes a built-in architecture selector (`dock_variant = 
 | **Backrest Wall Thickness** | $3.6\text{ mm}$ | $2.4\text{ mm}$ | $-33\%$ wall thickness |
 | **Perimeter Rail Width** | $4.2\text{ mm}$ | $3.0\text{ mm}$ | $-28\%$ side rail profile |
 | **boAt PB331 Left USB-C Slot** | Yes ($X = -16.0\text{ mm}$) | Yes ($X = -16.0\text{ mm}$) | Retained 100% |
-| **boAt LED Battery Window** | Yes ($16.0\text{ mm}$ center) | Yes ($16.0\text{ mm}$ center) | Retained 100% |
+| **boAt Pocket Floor** | 100% Solid & Continuous | 100% Solid & Continuous | Solid seat for PB331 |
 | **Galaxy S25 Wired Charging Cut** | Yes ($18.0 \times 12.0\text{ mm}$) | Yes ($18.0 \times 12.0\text{ mm}$) | Retained 100% |
 | **Concentric MagSafe Alignment** | $0.0\text{ mm}$ offset ($3.5\text{ mm}$ boAt drop) | $0.0\text{ mm}$ offset ($3.5\text{ mm}$ boAt drop) | Retained 100% |
 | **Camera Bump Air Clearance** | $3.0\text{ mm}$ air gap | $3.0\text{ mm}$ air gap | Retained 100% |
@@ -71,8 +71,8 @@ The parametric model includes a built-in architecture selector (`dock_variant = 
   * Inspection of the actual boAt PB331 confirms the USB-C input/output charging port is located on the **LEFT side of the bottom edge** at $X \approx -16.0\text{ mm}$ (not centered).
   * Floor cable slot shifted to $X = -16.0\text{ mm}$ with a generous $20.0\text{ mm} \times 11.5\text{ mm}$ pass-through channel to accommodate standard and bulky USB-C cable heads.
   * Under-base cable channel smoothly connects from $X = -16.0\text{ mm}$ out through the rear base egress.
-* **Battery LED Indicator Viewing Window:**
-  * The center 5 battery percentage and charging status LED indicator dots are now directly visible through the front center notch ($40.0\text{ mm}$ wide), allowing battery status checks at a glance while docked.
+* **Continuous Flat Pocket Floor:**
+  * Eliminated redundant blind pocket floor cutouts. The boAt PB331 sits on a continuous, 100% solid flat floor across the entire center section, providing maximum structural rigidity with zero weak lips or slits.
 
 ---
 

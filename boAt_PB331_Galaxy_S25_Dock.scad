@@ -9,9 +9,9 @@
 //
 // Retained Across Both Variants:
 //   - Left-offset boAt USB-C charging slot (X = -16.0 mm)
-//   - Center 5-LED battery status window (X = 0.0 mm)
+//   - Continuous solid flat pocket floor for PB331
 //   - Dedicated Galaxy S25 wired charging pass-through slot (Center X = 0.0 mm)
-//   - Dual-cable continuous under-base raceway with rear egress
+//   - Semi-cylindrical continuous under-base raceway with upward low-back sweep exit
 //   - Concentric MagSafe ring alignment (0.0mm Qi offset, 3.5mm boAt underhang, 3.0mm camera gap)
 //   - 100% support-free FDM printing, single-piece manifold solid
 //   - Personalized front nameplate ("TUMESH")
@@ -63,11 +63,10 @@ vent_h          = 82.0;    // Total height of ventilation zone
 vent_slots      = 7;       // Number of vertical slots
 rib_t           = 2.8;     // Width of structural ribs between slots
 
-/* [USB-C Port, LED Window & Cable Routing] */
+/* [USB-C Port & Cable Routing] */
 usbc_port_x     = -16.0;   // USB-C port center offset from midline
 cable_slot_w    = 20.0;    // USB-C slot width
 cable_slot_t    = 11.5;    // USB-C slot thickness
-led_window_w    = 16.0;    // Center battery LED indicator window width
 cable_radius    = 4.5;     // Semi-cylindrical channel radius (9.0mm diameter, form-fitted for circular braided cables)
 
 // Galaxy S25 bottom wired charging port (Center X = 0mm)
@@ -271,9 +270,9 @@ module ventilation_cutout() {
     }
 }
 
-// Multi-Port & Indicator Cutout at Pocket Floor:
-// 1. Left USB-C pass-through slot centered at X = -16.0mm (45-degree self-supporting peaked arch)
-// 2. Center LED viewing window centered at X = 0.0mm
+// boAt PB331 Left-Offset USB-C Charging Port Cutout:
+// Left USB-C pass-through slot centered at X = -16.0mm (45-degree self-supporting peaked Gothic arch)
+// Leaves a 100% continuous, solid flat floor across the center for the PB331 base
 module cable_pocket_slot() {
     // Left boAt USB-C charging slot with peaked Gothic roof to eliminate horizontal bridge cantilever
     hull() {
@@ -290,10 +289,6 @@ module cable_pocket_slot() {
         translate([usbc_port_x - cable_slot_w / 2, -35.0, -pocket_d])
             cube([cable_slot_w, 1.0, cable_slot_t + 4.0]);
     }
-    
-    // Center LED battery indicator viewing window
-    translate([-led_window_w / 2, -shelf_floor - 2.0, -pocket_d + 1.0])
-        cube([led_window_w, shelf_floor + 2.01, pocket_d - 2.0]);
 }
 
 // S25 Center Wired Charging Cable Pass-Through:
