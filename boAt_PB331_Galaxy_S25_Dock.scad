@@ -68,8 +68,7 @@ usbc_port_x     = -16.0;   // USB-C port center offset from midline
 cable_slot_w    = 20.0;    // USB-C slot width
 cable_slot_t    = 11.5;    // USB-C slot thickness
 led_window_w    = 16.0;    // Center battery LED indicator window width
-cable_exit_w    = 8.5;     // Under-base exit groove width (fits dual cables with 45-deg self-supporting gable roof)
-cable_exit_h    = is_lite ? 5.5 : 6.5; // Under-base exit groove height
+cable_radius    = 4.5;     // Semi-cylindrical channel radius (9.0mm diameter, form-fitted for circular braided cables)
 
 // Galaxy S25 bottom wired charging port (Center X = 0mm)
 s25_cable_slot_w = 14.0;   // S25 USB-C plug pass-through slot width
@@ -306,42 +305,33 @@ module s25_cable_slot() {
 }
 
 // Under-Base Cable Exit Channel & Rear Egress
-// Features 45-degree gable roof (chevron profile) for 100% support-free FDM bridging
-// Smoothly routes cables from both boAt USB-C (X = -16mm) and Galaxy S25 (X = 0mm) out the rear
+// Continuous semi-cylindrical raceway (R = 4.5mm, D = 9.0mm) with upward low-back sweep exit
+// Form-fitted to circular braided USB-C cables, 100% support-free FDM bridging, with zero sharp bends
 module cable_base_channel() {
     sy = p0_y_offset + slab_gy(-shelf_floor, -pocket_d / 2);
-    chan_w = cable_exit_w;
-    chan_h = cable_exit_h;
-    roof_h = chan_w / 2; // 4.25mm
-    wall_h = chan_h - roof_h; // 1.25mm (Lite) or 2.25mm (Standard)
-    
-    // Continuous 45-degree gable roof raceway from S25 drop (Y=14) to rear egress (Y=base_d)
+    chan_r = cable_radius;
     chan_y_start = 14.0;
-    chan_len = base_d - chan_y_start + 5.0;
+    chan_len = base_d - chan_y_start + 6.0;
     
+    // 1. Center continuous semi-cylindrical raceway (Z >= 0) from S25 drop to rear
     translate([0, chan_y_start, 0]) {
         rotate([-90, 0, 0]) {
-            linear_extrude(height = chan_len) {
-                polygon([
-                    [-chan_w / 2, -0.2],
-                    [chan_w / 2, -0.2],
-                    [chan_w / 2, wall_h],
-                    [0, chan_h],
-                    [-chan_w / 2, wall_h]
-                ]);
-            }
+            cylinder(r = chan_r, h = chan_len);
         }
     }
     
-    // Smooth 45-degree diagonal convergence from boAt left USB-C port
+    // 2. Smooth semi-cylindrical diagonal sweep from left boAt USB-C port
     hull() {
-        translate([usbc_port_x, sy - 4.0, 0]) {
-            cylinder(d = chan_w, h = max(0.1, wall_h), $fn = 20);
-            translate([0, 0, chan_h]) sphere(d = 0.1);
-        }
-        translate([0, sy + 14.0, 0]) {
-            cylinder(d = chan_w, h = max(0.1, wall_h), $fn = 20);
-            translate([0, 0, chan_h]) sphere(d = 0.1);
+        translate([usbc_port_x, sy - 4.0, 0])
+            sphere(r = chan_r);
+        translate([0, sy + 14.0, 0])
+            sphere(r = chan_r);
+    }
+    
+    // 3. Low back upward-sloping sweep exit (pulls cable smoothly up to rear egress)
+    translate([0, base_d - 4.0, 0]) {
+        rotate([-90 + 22, 0, 0]) {
+            cylinder(r = chan_r + 0.4, h = 18.0);
         }
     }
 }

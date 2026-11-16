@@ -588,14 +588,13 @@
       baseExtraF: 12.0,
       baseExtraR: 14.0,
 
-      // Ports & Channels (Zero-Cantilever 45° Self-Supporting Profile)
+      // Ports & Channels (Semi-Cylindrical Support-Free Routing & Upward Sweep)
       usbcPortX: -16.0,
       cableSlotW: 20.0,
       cableSlotT: 11.5,
       s25CableSlotW: 14.0,
       s25CableSlotT: 10.0,
-      cableExitW: 8.5,
-      cableExitH: 6.5,
+      cableRadius: 4.5,
 
       // Preview Overlays
       showGhosts: true
@@ -921,6 +920,28 @@
       baseMesh.receiveShadow = true;
       dockGroup.add(baseMesh);
 
+      // Semi-Cylindrical Under-Base Cable Raceway Visualizer (Cyan highlight)
+      const chanMat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        roughness: 0.35,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.3
+      });
+      const chanLen = baseD - 14.0;
+      const chanGeo = new THREE.CylinderGeometry(config.cableRadius, config.cableRadius, chanLen, 24, 1, false, 0, Math.PI);
+      const chanMesh = new THREE.Mesh(chanGeo, chanMat);
+      chanMesh.rotation.x = Math.PI / 2;
+      chanMesh.rotation.y = Math.PI;
+      chanMesh.position.set(0, 0.4, 14.0 + chanLen / 2);
+      dockGroup.add(chanMesh);
+
+      // Low-Back Upward Sweep Exit Visualizer (tilted 22 deg)
+      const sweepGeo = new THREE.CylinderGeometry(config.cableRadius + 0.4, config.cableRadius + 0.4, 16.0, 24);
+      const sweepMesh = new THREE.Mesh(sweepGeo, chanMat);
+      sweepMesh.rotation.x = Math.PI / 2 - THREE.MathUtils.degToRad(22);
+      sweepMesh.position.set(0, 2.2, baseD - 1.0);
+      dockGroup.add(sweepMesh);
+
       // 2. CRADLE SLAB & POCKET
       const slabGroup = new THREE.Group();
       slabGroup.position.set(0, config.baseH - 4, 38);
@@ -1089,15 +1110,14 @@ lip_h           = ${config.lipH.toFixed(1)};     // Front retaining lip height
 lip_t           = ${config.lipT.toFixed(1)};     // Lip wall thickness
 notch_w         = ${config.notchW.toFixed(1)};    // Center finger swipe gesture & speaker notch
 
-/* [USB-C Port, LED Window & Cable Routing] */
+/* [Semi-Cylindrical Wire Routing & Rear Egress] */
 usbc_port_x     = ${config.usbcPortX.toFixed(1)};   // boAt PB331 left port offset (mm)
 cable_slot_w    = ${config.cableSlotW.toFixed(1)};    // boAt USB-C slot width
 cable_slot_t    = ${config.cableSlotT.toFixed(1)};    // boAt USB-C slot thickness
 led_window_w    = 16.0;    // Center battery LED viewing window
+cable_radius    = ${config.cableRadius.toFixed(1)};     // Semi-cylindrical channel radius (9.0mm diameter, circular cable fit)
 s25_cable_slot_w = ${config.s25CableSlotW.toFixed(1)};   // S25 USB-C plug pass-through slot width
 s25_cable_slot_t = ${config.s25CableSlotT.toFixed(1)};   // S25 USB-C plug forward clearance
-cable_exit_w    = ${config.cableExitW.toFixed(1)};    // Under-base exit groove width
-cable_exit_h    = ${config.cableExitH.toFixed(1)};     // Under-base exit groove height
 
 /* [Base & Anti-Tip Footprint] */
 base_w          = ${config.baseW.toFixed(1)};   // Wide stance base width
