@@ -492,6 +492,7 @@
           <ul style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
             <li><strong>Plate:</strong> Gold Textured PEI (WOL3D / Bambu)</li>
             <li><strong>Supports:</strong> <span style="color: var(--accent-hover);">DISABLED (0% Supports Needed)</span></li>
+            <li><strong>Cantilevers:</strong> <span style="color: var(--accent-hover);">0% Floating Cantilevers (45° Gable Tunnel & Self-Supporting Arches)</span></li>
             <li><strong>Layer Height:</strong> 0.20mm Standard (or 0.16mm fine)</li>
             <li><strong>Walls:</strong> 4 Wall loops (1.6mm strong pocket walls)</li>
             <li><strong>Ballast Tip:</strong> Add a Modifier Box over Z=0 to Z=12mm set to <strong>100% Rectilinear</strong> infill for a heavy ~195g desk stance!</li>
@@ -587,14 +588,14 @@
       baseExtraF: 12.0,
       baseExtraR: 14.0,
 
-      // Ports & Channels
+      // Ports & Channels (Zero-Cantilever 45° Self-Supporting Profile)
       usbcPortX: -16.0,
       cableSlotW: 20.0,
       cableSlotT: 11.5,
-      s25CableSlotW: 18.0,
-      s25CableSlotT: 12.0,
-      cableExitW: 16.0,
-      cableExitH: 8.5,
+      s25CableSlotW: 14.0,
+      s25CableSlotT: 10.0,
+      cableExitW: 8.5,
+      cableExitH: 6.5,
 
       // Preview Overlays
       showGhosts: true
@@ -920,22 +921,6 @@
       baseMesh.receiveShadow = true;
       dockGroup.add(baseMesh);
 
-      // Underside Weight-Relief Cavity Visualizers (Lite Variant)
-      if (config.isLite) {
-        const cavityMat = new THREE.MeshBasicMaterial({ color: 0x090a0d });
-        // Left cavity
-        const leftCavityGeo = new THREE.BoxGeometry(16, 5, baseD - 24);
-        const leftCavityMesh = new THREE.Mesh(leftCavityGeo, cavityMat);
-        leftCavityMesh.position.set(-27, 2, baseD / 2);
-        dockGroup.add(leftCavityMesh);
-
-        // Right cavity
-        const rightCavityGeo = new THREE.BoxGeometry(22, 5, baseD - 24);
-        const rightCavityMesh = new THREE.Mesh(rightCavityGeo, cavityMat);
-        rightCavityMesh.position.set(22, 2, baseD / 2);
-        dockGroup.add(rightCavityMesh);
-      }
-
       // 2. CRADLE SLAB & POCKET
       const slabGroup = new THREE.Group();
       slabGroup.position.set(0, config.baseH - 4, 38);
@@ -1075,7 +1060,7 @@
 // =============================================================================
 
 /* [Model Architecture & Weight Profile] */
-dock_variant    = "${config.variant}"; // ["standard": Desktop Ballast (~109g), "lite": Slim Lightweight (~48g)]
+dock_variant    = "${config.variant}"; // ["standard": Desktop Ballast (~109g), "lite": Slim Lightweight (~55g)]
 
 /* [Devices & Real Clearances] */
 pb_h            = ${config.pbH.toFixed(1)};   // boAt PB331 nominal height (mm)
@@ -1225,7 +1210,7 @@ name_font       = "${config.nameFont}"; // Font family
         btnVariantStd.classList.remove('active');
         btnVariantStd.style.borderColor = "#30363d";
         btnVariantStd.style.color = "var(--text)";
-        badgeWeight.textContent = "~48g (-56% Mass)";
+        badgeWeight.textContent = "~55g (-49% Mass)";
         badgeWeight.className = "badge badge-green";
         
         // Slim dimensions

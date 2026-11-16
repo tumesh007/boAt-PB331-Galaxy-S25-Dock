@@ -124,10 +124,14 @@ The parametric model includes a built-in architecture selector (`dock_variant = 
 
 ## Slicer & 3D Printing Recommendations
 
-Tested and verified for Bambu Studio, PrusaSlicer, OrcaSlicer, and Cura:
+Tested and verified for Bambu Studio (A1 Mini / P1S / X1C), PrusaSlicer, OrcaSlicer, and Cura:
 
 * **Build Plate Orientation:** Place flat base directly on the print bed ($Z = 0$). No rotation needed.
-* **Supports:** **DISABLED (0% Supports Needed)**. Every angle complies with self-supporting FDM design rules.
+* **Supports:** **DISABLED (0% Supports Needed)**.
+* **Zero Cantilever Architecture:**
+  * All horizontal tunnels and cable channels feature continuous **$45^\circ$ gable roofs (chevron arch)**.
+  * Port openings utilize **pointed Gothic arches**, eliminating flat horizontal bridging ceilings.
+  * 100% solid, flat first layer contact with zero underside cavities prevents floating cantilever errors in Bambu Studio and MakerWorld.
 * **Layer Height:** `0.20 mm` Standard (or `0.16 mm` for ultra-fine edge fillets).
 * **Wall Loops / Perimeters:** `4 walls` ($\approx 1.6 - 1.8\text{ mm}$ shell thickness for strong pocket rails).
 * **Top / Bottom Shells:** `5 top, 4 bottom layers`.

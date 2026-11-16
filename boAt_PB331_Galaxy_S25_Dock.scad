@@ -68,12 +68,12 @@ usbc_port_x     = -16.0;   // USB-C port center offset from midline
 cable_slot_w    = 20.0;    // USB-C slot width
 cable_slot_t    = 11.5;    // USB-C slot thickness
 led_window_w    = 16.0;    // Center battery LED indicator window width
-cable_exit_w    = 16.0;    // Under-base exit groove width
-cable_exit_h    = is_lite ? 5.5 : 8.5; // Under-base exit groove height
+cable_exit_w    = 8.5;     // Under-base exit groove width (fits dual cables with 45-deg self-supporting gable roof)
+cable_exit_h    = is_lite ? 5.5 : 6.5; // Under-base exit groove height
 
 // Galaxy S25 bottom wired charging port (Center X = 0mm)
-s25_cable_slot_w = 18.0;   // S25 USB-C plug pass-through slot width
-s25_cable_slot_t = 12.0;   // S25 USB-C plug forward clearance along shelf
+s25_cable_slot_w = 14.0;   // S25 USB-C plug pass-through slot width
+s25_cable_slot_t = 10.0;   // S25 USB-C plug forward clearance along shelf
 
 /* [Base & Anti-Tip Footprint] */
 base_w          = is_lite ? 86.0 : 110.0;  // Base width
@@ -86,7 +86,7 @@ show_name       = true;     // Enable custom nameplate on front of base
 custom_name     = "TUMESH"; // Name / branding text on front face
 name_style      = "deboss"; // "deboss" (engraved) or "emboss" (raised lettering)
 name_font_size  = is_lite ? 4.8 : 5.5; // Text height in mm (scales with base_h)
-name_depth      = 0.8;      // Engraving / protrusion depth (mm)
+name_depth      = 0.6;      // Engraving / protrusion depth (0.6mm = 3 perimeters, crisp deboss)
 name_font       = "Arial:style=Bold"; // Font family & style
 
 /* [Friction Grip Retention] */
@@ -273,12 +273,16 @@ module ventilation_cutout() {
 }
 
 // Multi-Port & Indicator Cutout at Pocket Floor:
-// 1. Left USB-C pass-through slot centered at X = -16.0mm
+// 1. Left USB-C pass-through slot centered at X = -16.0mm (45-degree self-supporting peaked arch)
 // 2. Center LED viewing window centered at X = 0.0mm
 module cable_pocket_slot() {
-    // Left USB-C charging slot
-    translate([usbc_port_x - cable_slot_w / 2, -shelf_floor - 2.0, -pocket_d + (pocket_d - cable_slot_t) / 2])
-        cube([cable_slot_w, shelf_floor + 2.01, cable_slot_t]);
+    // Left boAt USB-C charging slot with peaked Gothic roof to eliminate horizontal bridge cantilever
+    hull() {
+        translate([usbc_port_x - cable_slot_w / 2, -shelf_floor - 2.0, -pocket_d + (pocket_d - cable_slot_t) / 2])
+            cube([cable_slot_w, shelf_floor + 2.01, cable_slot_t - 3.0]);
+        translate([usbc_port_x, -shelf_floor - 2.0, -pocket_d + (pocket_d - cable_slot_t) / 2 + cable_slot_t])
+            cube([0.1, shelf_floor + 2.01, 0.1]);
+    }
         
     // Angled channel running through pedestal into the base from USB-C port
     hull() {
@@ -295,61 +299,49 @@ module cable_pocket_slot() {
 
 // S25 Center Wired Charging Cable Pass-Through:
 // Directly below Galaxy S25 bottom USB-C port (centered at X = 0.0mm)
-// Cuts vertically through shelf floor and sloped pedestal into under-base channel
+// Drops vertically through shelf floor and sloped pedestal into under-base gable channel
 module s25_cable_slot() {
-    translate([-s25_cable_slot_w / 2, -35.0, 0.5])
+    translate([-s25_cable_slot_w / 2, -35.0, 1.0])
         cube([s25_cable_slot_w, ledge_y + 35.0 + 1.0, s25_cable_slot_t]);
 }
 
 // Under-Base Cable Exit Channel & Rear Egress
+// Features 45-degree gable roof (chevron profile) for 100% support-free FDM bridging
 // Smoothly routes cables from both boAt USB-C (X = -16mm) and Galaxy S25 (X = 0mm) out the rear
 module cable_base_channel() {
     sy = p0_y_offset + slab_gy(-shelf_floor, -pocket_d / 2);
+    chan_w = cable_exit_w;
+    chan_h = cable_exit_h;
+    roof_h = chan_w / 2; // 4.25mm
+    wall_h = chan_h - roof_h; // 1.25mm (Lite) or 2.25mm (Standard)
     
-    // Continuous center exit groove routing S25 drop and boAt convergence through rear egress
-    translate([-cable_exit_w / 2, 8.0, -0.1])
-        cube([cable_exit_w, base_d - 8.0 + 15.0, cable_exit_h]);
-        
-    // Angled channel linking left USB-C port (X = -16) to the base exit
-    hull() {
-        translate([usbc_port_x - cable_slot_w / 2, sy - 8.0, -0.1])
-            cube([cable_slot_w, 14.0, cable_exit_h]);
-        translate([-cable_exit_w / 2, sy + 15.0, -0.1])
-            cube([cable_exit_w, 14.0, cable_exit_h]);
-    }
+    // Continuous 45-degree gable roof raceway from S25 drop (Y=14) to rear egress (Y=base_d)
+    chan_y_start = 14.0;
+    chan_len = base_d - chan_y_start + 5.0;
     
-    // Vertical transition into pedestal for boAt port
-    hull() {
-        translate([usbc_port_x - cable_slot_w / 2, sy - 8.0, -0.1])
-            cube([cable_slot_w, 12.0, cable_exit_h]);
-        translate([usbc_port_x - cable_slot_w / 2, sy - 2.0, base_h - 1.0])
-            cube([cable_slot_w, 12.0, 2.0]);
-    }
-}
-
-// Underside Weight-Relief Cavities (Lite Version)
-// Removes dead material from base plate underside while preserving perimeter walls and rigid top deck
-module base_weight_relief() {
-    if (is_lite) {
-        cavity_h = base_h - 2.8; // Leaves 2.8mm solid top deck
-        cavity_y_start = 12.0;
-        cavity_y_end = base_d - 12.0;
-        cavity_y_len = cavity_y_end - cavity_y_start;
-        
-        // Left cavity (outside boAt USB-C channel zone)
-        left_x_outer = -base_w / 2 + 4.0;
-        left_x_inner = usbc_port_x - cable_slot_w / 2 - 3.5;
-        if (left_x_inner > left_x_outer + 3.0) {
-            translate([left_x_outer, cavity_y_start, -0.1])
-                cube([left_x_inner - left_x_outer, cavity_y_len, cavity_h + 0.1]);
+    translate([0, chan_y_start, 0]) {
+        rotate([-90, 0, 0]) {
+            linear_extrude(height = chan_len) {
+                polygon([
+                    [-chan_w / 2, -0.2],
+                    [chan_w / 2, -0.2],
+                    [chan_w / 2, wall_h],
+                    [0, chan_h],
+                    [-chan_w / 2, wall_h]
+                ]);
+            }
         }
-        
-        // Right cavity (outside center cable raceway)
-        right_x_inner = s25_cable_slot_w / 2 + 3.5;
-        right_x_outer = base_w / 2 - 4.0;
-        if (right_x_outer > right_x_inner + 3.0) {
-            translate([right_x_inner, cavity_y_start, -0.1])
-                cube([right_x_outer - right_x_inner, cavity_y_len, cavity_h + 0.1]);
+    }
+    
+    // Smooth 45-degree diagonal convergence from boAt left USB-C port
+    hull() {
+        translate([usbc_port_x, sy - 4.0, 0]) {
+            cylinder(d = chan_w, h = max(0.1, wall_h), $fn = 20);
+            translate([0, 0, chan_h]) sphere(d = 0.1);
+        }
+        translate([0, sy + 14.0, 0]) {
+            cylinder(d = chan_w, h = max(0.1, wall_h), $fn = 20);
+            translate([0, 0, chan_h]) sphere(d = 0.1);
         }
     }
 }
@@ -429,7 +421,6 @@ module complete_dock() {
             phone_shelf_notch();
         }
         cable_base_channel();
-        base_weight_relief();
         if (name_style == "deboss") {
             front_nameplate();
         }
