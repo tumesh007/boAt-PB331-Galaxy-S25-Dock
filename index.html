@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>boAt PB331 + Galaxy S25 Dock — 3D Parametric Customizer (v1.2.0)</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card-bg: #181b22;
+      --card-border: #262a35;
+      --text: #f0f3f6;
+      --text-muted: #8b949e;
+      --accent: #2ea043;
+      --accent-hover: #3fb950;
+      --blue: #58a6ff;
+      --blue-bg: #1f2b3e;
+      --orange: #f0883e;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-green {
+      background: rgba(46, 160, 67, 0.15);
+      color: var(--accent-hover);
+      border-color: rgba(46, 160, 67, 0.3);
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    button, .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    button:hover, .btn:hover { background: var(--accent-hover); }
+    button.btn-secondary {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: var(--text);
+    }
+    button.btn-secondary:hover {
+      background: #30363d;
+    }
+    .layout {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 61px);
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; height: auto; overflow: visible; }
+    }
+    .sidebar {
+      width: 440px;
+      min-width: 380px;
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 100%; min-width: auto; height: auto; }
+    }
+    .main-viewport {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #090a0d;
+    }
+    #viewport-canvas {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      outline: none;
+      cursor: grab;
+    }
+    #viewport-canvas:active { cursor: grabbing; }
+    .viewport-overlay {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+    .viewport-stats {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: rgba(24, 27, 34, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .stats-label { color: var(--text-muted); }
+    .stats-val { font-weight: 600; font-family: monospace; color: var(--text); }
+    .stats-val.highlight { color: var(--blue); }
+    .stats-val.green { color: var(--accent-hover); }
+
+    .control-card {
+      background: #12141a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .control-label { color: var(--text-muted); }
+    .control-val { font-family: monospace; font-weight: 600; color: var(--text); }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+      background: #262a35;
+      height: 5px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    input[type="text"], select {
+      background: #1c2029;
+      border: 1px solid #30363d;
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 100%;
+      outline: none;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--blue);
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #30363d;
+      transition: .2s;
+      border-radius: 20px;
+    }
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider-toggle { background-color: var(--accent); }
+    input:checked + .slider-toggle:before { transform: translateX(16px); }
+
+    /* Code modal / tab */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--card-border);
+      background: #12141a;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .tab-btn {
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+      background: rgba(88, 166, 255, 0.05);
+    }
+    pre {
+      background: #090a0d;
+      padding: 12px;
+      font-size: 0.74rem;
+      font-family: Consolas, "Fira Code", monospace;
+      color: #c9d1d9;
+      overflow-x: auto;
+      max-height: 240px;
+      border-radius: 0 0 var(--radius) var(--radius);
+      border: 1px solid var(--card-border);
+      border-top: none;
+    }
+    .chip {
+      display: inline-block;
+      background: #21262d;
+      color: #8b949e;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      margin-right: 4px;
+    }
+  </style>
+  <!-- Three.js + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span>boAt PB331 + Galaxy S25 Dock</span>
+      <span class="badge">v1.2.0</span>
+      <span class="badge badge-green">Dual USB-C Egress</span>
+    </h1>
+    <div class="btn-group">
+      <button class="btn-secondary" id="btn-reset-view">Reset 3D View</button>
+      <button class="btn-secondary" id="btn-copy-scad">Copy .SCAD</button>
+      <button id="btn-download-scad">Download .SCAD</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar Controls -->
+    <aside class="sidebar">
+
+      <!-- 1. PERSONALIZATION / NAMEPLATE -->
+      <div class="control-card">
+        <div class="card-title">
+          <span>Personalization & Branding</span>
+          <span class="badge badge-green">Front Nameplate</span>
+        </div>
+        <div class="toggle-row">
+          <span>Enable Front Nameplate</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="show-name" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Front Name / Text</span>
+          </div>
+          <input type="text" id="custom-name" value="TUMESH" maxlength="18">
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Engraving Style</span>
+          </div>
+          <select id="name-style">
+            <option value="deboss" selected>Debossed (Engraved into base - 100% Support Free)</option>
+            <option value="emboss">Embossed (Raised 3D Lettering)</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Font Size</span>
+            <span class="control-val" id="val-font-size">5.5 mm</span>
+          </div>
+          <input type="range" id="font-size" min="3.5" max="7.5" step="0.5" value="5.5">
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Engraving Depth</span>
+            <span class="control-val" id="val-name-depth">0.8 mm</span>
+          </div>
+          <input type="range" id="name-depth" min="0.4" max="1.6" step="0.2" value="0.8">
+        </div>
+      </div>
+
+      <!-- 2. DEVICE PRESETS & S25 WIRED CHARGING -->
+      <div class="control-card">
+        <div class="card-title">
+          <span>Device & Charging Setup</span>
+          <span class="badge">v1.2 Feature</span>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Phone Model Preset</span>
+          </div>
+          <select id="phone-preset">
+            <option value="s25" selected>Samsung Galaxy S25 (Cased: 150.5 x 74.5 x 10.5 mm)</option>
+            <option value="s25plus">Samsung Galaxy S25+ (Cased: 158.4 x 75.8 x 10.5 mm)</option>
+            <option value="s25ultra">Samsung Galaxy S25 Ultra (Cased: 162.8 x 77.6 x 11.0 mm)</option>
+            <option value="ip16pro">Apple iPhone 16 Pro (Cased: 149.6 x 71.5 x 11.2 mm)</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">S25 Wired Drop Slot Width</span>
+            <span class="control-val" id="val-s25-cable-w">18.0 mm</span>
+          </div>
+          <input type="range" id="s25-cable-w" min="14.0" max="24.0" step="1.0" value="18.0">
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">boAt Left USB-C Offset (X)</span>
+            <span class="control-val" id="val-boat-offset">-16.0 mm</span>
+          </div>
+          <input type="range" id="boat-offset" min="-24.0" max="-8.0" step="1.0" value="-16.0">
+        </div>
+        <div class="toggle-row">
+          <span>Show Device Ghost Previews</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="show-ghosts" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 3. ERGONOMICS & MAGSAFE ALIGNMENT -->
+      <div class="control-card">
+        <div class="card-title">
+          <span>Ergonomics & MagSafe Alignment</span>
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Viewing Angle (Tilt)</span>
+            <span class="control-val" id="val-tilt">65.0°</span>
+          </div>
+          <input type="range" id="tilt" min="55.0" max="75.0" step="1.0" value="65.0">
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Pocket Rim Below Phone Top</span>
+            <span class="control-val" id="val-rim-below">46.0 mm</span>
+          </div>
+          <input type="range" id="rim-below" min="40.0" max="52.0" step="1.0" value="46.0">
+        </div>
+        <div class="control-row">
+          <div class="control-header">
+            <span class="control-label">Resting Shelf Depth</span>
+            <span class="control-val" id="val-ledge-len">14.0 mm</span>
+          </div>
+          <input type="range" id="ledge-len" min="11.0" max="18.0" step="0.5" value="14.0">
+        </div>
+      </div>
+
+      <!-- 4. LIVE OPENSCAD CODE -->
+      <div class="control-card" style="padding: 0; background: transparent;">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="code">OpenSCAD Code</button>
+          <button class="tab-btn" data-tab="slicer">Bambu Studio Guide</button>
+        </div>
+        <div id="tab-code-panel">
+          <pre><code id="scad-code-preview">// Loading code...</code></pre>
+        </div>
+        <div id="tab-slicer-panel" style="display: none; padding: 12px; background: #090a0d; border: 1px solid var(--card-border); border-top: none; font-size: 0.78rem; line-height: 1.5;">
+          <p><strong style="color: var(--blue);">Bambu Lab A1 Mini / P1S / X1C Setup:</strong></p>
+          <ul style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+            <li><strong>Plate:</strong> Gold Textured PEI (WOL3D / Bambu)</li>
+            <li><strong>Supports:</strong> <span style="color: var(--accent-hover);">DISABLED (0% Supports Needed)</span></li>
+            <li><strong>Layer Height:</strong> 0.20mm Standard (or 0.16mm fine)</li>
+            <li><strong>Walls:</strong> 4 Wall loops (1.6mm strong pocket walls)</li>
+            <li><strong>Ballast Tip:</strong> Add a Modifier Box over Z=0 to Z=12mm set to <strong>100% Rectilinear</strong> infill for a heavy ~195g desk stance!</li>
+          </ul>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <div class="viewport-overlay">
+        <button class="btn-secondary" id="btn-view-front">Front</button>
+        <button class="btn-secondary" id="btn-view-iso">Iso</button>
+        <button class="btn-secondary" id="btn-view-rear">Rear</button>
+        <button class="btn-secondary" id="btn-view-bottom">Bottom</button>
+      </div>
+
+      <!-- Live Alignment Readouts -->
+      <div class="viewport-stats">
+        <div class="stats-row">
+          <span class="stats-label">Concentric MagSafe Offset:</span>
+          <span class="stats-val green" id="stat-magsafe-offset">0.0 mm (Peak 15W Lock)</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Physical boAt Underhang:</span>
+          <span class="stats-val highlight" id="stat-boat-underhang">3.5 mm below phone</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Camera Bump Clearance:</span>
+          <span class="stats-val green" id="stat-cam-clearance">3.0 mm air gap</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Phone Ledge Height (Y):</span>
+          <span class="stats-val" id="stat-ledge-y">4.3 mm above pocket floor</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Footprint (W x D x H):</span>
+          <span class="stats-val" id="stat-footprint">110 x 110 x 123 mm</span>
+        </div>
+      </div>
+
+      <div id="viewport-canvas"></div>
+    </main>
+  </div>
+
+  <script>
+    // --- STATE CONFIGURATION ---
+    const config = {
+      // Personalization
+      showName: true,
+      customName: "TUMESH",
+      nameStyle: "deboss",
+      fontSize: 5.5,
+      nameDepth: 0.8,
+      nameFont: "Arial:style=Bold",
+
+      // Devices
+      pbH: 108.0,
+      pbW: 70.0,
+      pbBodyD: 19.5,
+      pbPadD: 1.5,
+      phoneH: 150.5,
+      phoneW: 74.5,
+      phoneT: 10.5,
+      tolW: 0.8,
+      tolD: 0.8,
+      tolH: 0.8,
+
+      // Alignment
+      tilt: 65.0,
+      rimBelowPhoneTop: 46.0,
+      ledgeLen: 14.0,
+      lipH: 3.2,
+      lipT: 2.6,
+      notchW: 40.0,
+
+      // Walls & Structure
+      wallRear: 3.6,
+      railW: 4.2,
+      shelfFloor: 3.6,
+      baseW: 110.0,
+      baseH: 12.0,
+      baseExtraF: 12.0,
+      baseExtraR: 14.0,
+
+      // Ports & Channels
+      usbcPortX: -16.0,
+      cableSlotW: 20.0,
+      cableSlotT: 11.5,
+      s25CableSlotW: 18.0,
+      s25CableSlotT: 12.0,
+      cableExitW: 16.0,
+      cableExitH: 8.5,
+
+      // Preview Overlays
+      showGhosts: true
+    };
+
+    // Preset phone dimensions
+    const phonePresets = {
+      s25:      { h: 150.5, w: 74.5, t: 10.5, ringFromBottom: 74.0, camFromTop: 43.0 },
+      s25plus:  { h: 158.4, w: 75.8, t: 10.5, ringFromBottom: 78.0, camFromTop: 45.0 },
+      s25ultra: { h: 162.8, w: 77.6, t: 11.0, ringFromBottom: 80.0, camFromTop: 48.0 },
+      ip16pro:  { h: 149.6, w: 71.5, t: 11.2, ringFromBottom: 72.0, camFromTop: 42.0 }
+    };
+
+    // --- DOM REFERENCES ---
+    const customNameInput = document.getElementById('custom-name');
+    const showNameToggle = document.getElementById('show-name');
+    const nameStyleSelect = document.getElementById('name-style');
+    const fontSizeSlider = document.getElementById('font-size');
+    const nameDepthSlider = document.getElementById('name-depth');
+    const tiltSlider = document.getElementById('tilt');
+    const rimBelowSlider = document.getElementById('rim-below');
+    const ledgeLenSlider = document.getElementById('ledge-len');
+    const s25CableWSlider = document.getElementById('s25-cable-w');
+    const boatOffsetSlider = document.getElementById('boat-offset');
+    const phonePresetSelect = document.getElementById('phone-preset');
+    const showGhostsToggle = document.getElementById('show-ghosts');
+
+    const valFontSize = document.getElementById('val-font-size');
+    const valNameDepth = document.getElementById('val-name-depth');
+    const valTilt = document.getElementById('val-tilt');
+    const valRimBelow = document.getElementById('val-rim-below');
+    const valLedgeLen = document.getElementById('val-ledge-len');
+    const valS25CableW = document.getElementById('val-s25-cable-w');
+    const valBoatOffset = document.getElementById('val-boat-offset');
+
+    const statMagsafeOffset = document.getElementById('stat-magsafe-offset');
+    const statBoatUnderhang = document.getElementById('stat-boat-underhang');
+    const statCamClearance = document.getElementById('stat-cam-clearance');
+    const statLedgeY = document.getElementById('stat-ledge-y');
+    const statFootprint = document.getElementById('stat-footprint');
+    const scadCodePreview = document.getElementById('scad-code-preview');
+
+    // --- THREE.JS SCENE SETUP ---
+    let scene, camera, renderer, controls;
+    let dockGroup, ghostGroup, textMesh;
+    const container = document.getElementById('viewport-canvas');
+
+    function init3D() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0c10);
+
+      const aspect = container.clientWidth / container.clientHeight;
+      camera = new THREE.PerspectiveCamera(40, aspect, 1, 1000);
+      camera.position.set(130, 90, 180);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.target.set(0, 45, 10);
+
+      // Studio Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambientLight);
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      keyLight.position.set(120, 200, 150);
+      keyLight.castShadow = true;
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0x58a6ff, 0.4);
+      fillLight.position.set(-150, 100, -100);
+      scene.add(fillLight);
+
+      const rimLight = new THREE.DirectionalLight(0x2ea043, 0.25);
+      rimLight.position.set(0, -100, -150);
+      scene.add(rimLight);
+
+      // Floor Grid
+      const grid = new THREE.GridHelper(300, 30, 0x30363d, 0x161b22);
+      grid.position.y = -0.1;
+      scene.add(grid);
+
+      dockGroup = new THREE.Group();
+      scene.add(dockGroup);
+
+      ghostGroup = new THREE.Group();
+      scene.add(ghostGroup);
+
+      window.addEventListener('resize', onWindowResize);
+      animate();
+    }
+
+    function onWindowResize() {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // --- TEXT TEXTURE CREATOR FOR FRONT BASE ---
+    function createNameplateTexture(text, style, size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+
+      // Base background
+      ctx.fillStyle = "#22262e";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!config.showName || !text || text.trim() === "") {
+        return new THREE.CanvasTexture(canvas);
+      }
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `bold ${Math.round(size * 10)}px -apple-system, Arial, sans-serif`;
+
+      if (style === "deboss") {
+        // Shadow + dark engraved effect
+        ctx.fillStyle = "#0f1115";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 3);
+        ctx.fillStyle = "#161920";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        ctx.strokeStyle = "#30363d";
+        ctx.lineWidth = 2;
+        ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+      } else {
+        // Raised 3D embossed look
+        ctx.fillStyle = "#3a4150";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 2);
+        ctx.fillStyle = "#8b949e";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+      }
+
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    // --- REBUILD 3D MODEL FROM CONFIG ---
+    function update3DModel() {
+      // Clear previous dock geometry
+      while (dockGroup.children.length > 0) {
+        dockGroup.remove(dockGroup.children[0]);
+      }
+      while (ghostGroup.children.length > 0) {
+        ghostGroup.remove(ghostGroup.children[0]);
+      }
+
+      const dockMat = new THREE.MeshStandardMaterial({
+        color: 0x272b33,
+        roughness: 0.45,
+        metalness: 0.15
+      });
+
+      const padMat = new THREE.MeshStandardMaterial({
+        color: 0x1c2027,
+        roughness: 0.6
+      });
+
+      // 1. BASE PLATE
+      const baseGeo = new THREE.BoxGeometry(config.baseW, config.baseH, 110);
+      const nameTexture = createNameplateTexture(config.customName, config.nameStyle, config.fontSize);
+
+      const baseMaterials = [
+        dockMat, // Right
+        dockMat, // Left
+        dockMat, // Top
+        dockMat, // Bottom
+        dockMat, // Back (+Z in BoxGeo)
+        new THREE.MeshStandardMaterial({ map: nameTexture, roughness: 0.45 }) // Front (-Z in BoxGeo)
+      ];
+
+      const baseMesh = new THREE.Mesh(baseGeo, baseMaterials);
+      baseMesh.position.set(0, config.baseH / 2, 55);
+      baseMesh.castShadow = true;
+      baseMesh.receiveShadow = true;
+      dockGroup.add(baseMesh);
+
+      // 2. CRADLE SLAB & POCKET
+      const slabGroup = new THREE.Group();
+      slabGroup.position.set(0, config.baseH - 4, 38);
+      slabGroup.rotation.x = -THREE.MathUtils.degToRad(config.tilt - 90);
+
+      // Main backrest envelope
+      const backrestW = config.pbW + 2 * config.railW;
+      const backrestH = config.pbH + config.shelfFloor;
+      const backrestD = config.pbBodyD + config.wallRear;
+
+      const backrestGeo = new THREE.BoxGeometry(backrestW, backrestH, backrestD);
+      const backrestMesh = new THREE.Mesh(backrestGeo, dockMat);
+      backrestMesh.position.set(0, backrestH / 2, -backrestD / 2);
+      slabGroup.add(backrestMesh);
+
+      // Resting Shelf & Retaining Lip
+      const ledgeY = config.pbH + config.tolH + config.rimBelowPhoneTop - config.phoneH;
+      const shelfW = backrestW;
+      const shelfH = 8;
+      const shelfD = config.ledgeLen + config.lipT;
+
+      const shelfGeo = new THREE.BoxGeometry(shelfW, shelfH, shelfD);
+      const shelfMesh = new THREE.Mesh(shelfGeo, dockMat);
+      shelfMesh.position.set(0, ledgeY - shelfH / 2 + 4, shelfD / 2);
+      slabGroup.add(shelfMesh);
+
+      // Center Gesture & S25 Wired Charging Notch (Negative visual cavity)
+      const notchGeo = new THREE.BoxGeometry(config.notchW, 16, shelfD + 2);
+      const notchMat = new THREE.MeshBasicMaterial({ color: 0x090a0d });
+      const notchMesh = new THREE.Mesh(notchGeo, notchMat);
+      notchMesh.position.set(0, ledgeY + 2, shelfD / 2);
+      // Representing cut through notch
+      slabGroup.add(notchMesh);
+
+      // S25 Wired Charging Drop Slot indicator (Orange highlight in center)
+      const s25DropGeo = new THREE.BoxGeometry(config.s25CableSlotW, 35, config.s25CableSlotT);
+      const s25DropMat = new THREE.MeshStandardMaterial({
+        color: 0xf0883e,
+        roughness: 0.3,
+        emissive: 0xf0883e,
+        emissiveIntensity: 0.2
+      });
+      const s25DropMesh = new THREE.Mesh(s25DropGeo, s25DropMat);
+      s25DropMesh.position.set(0, ledgeY - 14, config.s25CableSlotT / 2);
+      slabGroup.add(s25DropMesh);
+
+      // boAt USB-C Slot (Left offset)
+      const boatSlotGeo = new THREE.BoxGeometry(config.cableSlotW, 20, config.cableSlotT);
+      const boatSlotMat = new THREE.MeshStandardMaterial({
+        color: 0x58a6ff,
+        roughness: 0.3,
+        emissive: 0x58a6ff,
+        emissiveIntensity: 0.2
+      });
+      const boatSlotMesh = new THREE.Mesh(boatSlotGeo, boatSlotMat);
+      boatSlotMesh.position.set(config.usbcPortX, -5, -config.pbBodyD / 2);
+      slabGroup.add(boatSlotMesh);
+
+      dockGroup.add(slabGroup);
+
+      // 3. GHOST DEVICE OVERLAYS
+      if (config.showGhosts) {
+        // Transparent Galaxy S25
+        const phoneGeo = new THREE.BoxGeometry(config.phoneW, config.phoneH, config.phoneT);
+        const phoneMat = new THREE.MeshStandardMaterial({
+          color: 0x58a6ff,
+          transparent: true,
+          opacity: 0.45,
+          roughness: 0.2
+        });
+        const phoneMesh = new THREE.Mesh(phoneGeo, phoneMat);
+        phoneMesh.position.set(0, ledgeY + config.phoneH / 2, config.pbPadD + config.phoneT / 2);
+        slabGroup.add(phoneMesh);
+
+        // Transparent boAt PB331 Power Bank
+        const pbGeo = new THREE.BoxGeometry(config.pbW, config.pbH, config.pbBodyD);
+        const pbMat = new THREE.MeshStandardMaterial({
+          color: 0x2ea043,
+          transparent: true,
+          opacity: 0.35,
+          roughness: 0.3
+        });
+        const pbMesh = new THREE.Mesh(pbGeo, pbMat);
+        pbMesh.position.set(0, config.pbH / 2, -config.pbBodyD / 2);
+        slabGroup.add(pbMesh);
+      }
+
+      updateCalculations();
+      updateScadPreview();
+    }
+
+    // --- RECALCULATE DOCK MATH & STATS ---
+    function updateCalculations() {
+      const pocketH = config.pbH + config.tolH;
+      const ledgeY = pocketH + config.rimBelowPhoneTop - config.phoneH;
+      const pbRingFromBottom = config.pbH - 30.5; // 77.5mm
+      const currentPhone = phonePresets[phonePresetSelect.value] || phonePresets.s25;
+      const phoneRingDockY = ledgeY + currentPhone.ringFromBottom;
+      const offset = phoneRingDockY - pbRingFromBottom;
+      const camClearance = config.rimBelowPhoneTop - currentPhone.camFromTop;
+      const underhang = pbRingFromBottom - currentPhone.ringFromBottom;
+
+      statMagsafeOffset.textContent = `${Math.abs(offset).toFixed(1)} mm (${Math.abs(offset) < 1.0 ? "Concentric Qi Lock" : "Sub-optimal"})`;
+      statMagsafeOffset.className = `stats-val ${Math.abs(offset) < 1.0 ? "green" : "highlight"}`;
+
+      statBoatUnderhang.textContent = `${underhang.toFixed(1)} mm below phone`;
+      statCamClearance.textContent = `${camClearance.toFixed(1)} mm air gap`;
+      statLedgeY.textContent = `${ledgeY.toFixed(1)} mm above pocket floor`;
+    }
+
+    // --- UPDATE OPENSCAD CODE GENERATOR ---
+    function generateScadCode() {
+      return `// =============================================================================
+// Premium 3D-Printable Desktop Wireless Charging Stand & Dock (v1.2.0)
+// Hardware: boAt EnergyShroom PB331 Magnetic Power Bank (${config.pbH} x ${config.pbW} x ${config.pbBodyD} mm)
+//           Samsung Galaxy S25 in Silicone MagSafe Case (${config.phoneH} x ${config.phoneW} x ${config.phoneT} mm)
+// Personalized Front Nameplate: "${config.customName}" (${config.nameStyle})
+// =============================================================================
+
+/* [Devices & Real Clearances] */
+pb_h            = ${config.pbH.toFixed(1)};   // boAt PB331 nominal height (mm)
+pb_w            = ${config.pbW.toFixed(1)};    // boAt PB331 nominal width (mm)
+pb_body_d       = ${config.pbBodyD.toFixed(1)};    // boAt PB331 main body thickness (mm)
+pb_pad_d        = ${config.pbPadD.toFixed(1)};     // Additional depth of raised circular MagSafe pad (mm)
+phone_h         = ${config.phoneH.toFixed(1)};   // Cased Phone height (mm)
+phone_w         = ${config.phoneW.toFixed(1)};    // Cased Phone width (mm)
+phone_t         = ${config.phoneT.toFixed(1)};    // Cased Phone thickness (mm)
+
+tol_w           = ${config.tolW.toFixed(1)};     // Width print tolerance
+tol_d           = ${config.tolD.toFixed(1)};     // Depth clearance
+tol_h           = ${config.tolH.toFixed(1)};     // Height clearance
+
+pocket_w        = pb_w + tol_w;          // ${(config.pbW + config.tolW).toFixed(1)} mm
+pocket_d        = pb_body_d + tol_d;      // ${(config.pbBodyD + config.tolD).toFixed(1)} mm
+pocket_h        = pb_h + tol_h;          // ${(config.pbH + config.tolH).toFixed(1)} mm
+
+/* [Ergonomics & Camera Clearance] */
+tilt            = ${config.tilt.toFixed(1)};    // Viewing angle (deg backward)
+rim_below_phone_top = ${config.rimBelowPhoneTop.toFixed(1)}; // Top rim offset for concentric alignment
+
+/* [Phone Resting Ledge] */
+ledge_len       = ${config.ledgeLen.toFixed(1)};    // Forward shelf depth (mm)
+lip_h           = ${config.lipH.toFixed(1)};     // Front retaining lip height
+lip_t           = ${config.lipT.toFixed(1)};     // Lip wall thickness
+notch_w         = ${config.notchW.toFixed(1)};    // Center finger swipe gesture & speaker notch
+
+/* [USB-C Port, LED Window & Cable Routing] */
+usbc_port_x     = ${config.usbcPortX.toFixed(1)};   // boAt PB331 left port offset (mm)
+cable_slot_w    = ${config.cableSlotW.toFixed(1)};    // boAt USB-C slot width
+cable_slot_t    = ${config.cableSlotT.toFixed(1)};    // boAt USB-C slot thickness
+led_window_w    = 16.0;    // Center battery LED viewing window
+s25_cable_slot_w = ${config.s25CableSlotW.toFixed(1)};   // S25 USB-C plug pass-through slot width
+s25_cable_slot_t = ${config.s25CableSlotT.toFixed(1)};   // S25 USB-C plug forward clearance
+cable_exit_w    = ${config.cableExitW.toFixed(1)};    // Under-base exit groove width
+cable_exit_h    = ${config.cableExitH.toFixed(1)};     // Under-base exit groove height
+
+/* [Base & Anti-Tip Footprint] */
+base_w          = ${config.baseW.toFixed(1)};   // Wide stance base width
+base_h          = ${config.baseH.toFixed(1)};    // Base ballast thickness
+base_extra_f    = ${config.baseExtraF.toFixed(1)};    // Front extension
+base_extra_r    = ${config.baseExtraR.toFixed(1)};    // Rear extension
+
+/* [Personalization / Front Nameplate] */
+show_name       = ${config.showName};     // Enable custom nameplate on front of base
+custom_name     = "${config.customName}"; // Name / branding text on front face
+name_style      = "${config.nameStyle}"; // "deboss" (engraved) or "emboss" (raised)
+name_font_size  = ${config.fontSize.toFixed(1)};      // Text height (mm)
+name_depth      = ${config.nameDepth.toFixed(1)};      // Engraving depth (mm)
+name_font       = "${config.nameFont}"; // Font family
+
+// To render in OpenSCAD CLI:
+// openscad -o boAt_PB331_Galaxy_S25_Dock.stl boAt_PB331_Galaxy_S25_Dock.scad`;
+    }
+
+    function updateScadPreview() {
+      scadCodePreview.textContent = generateScadCode();
+    }
+
+    // --- EVENT LISTENERS ---
+    customNameInput.addEventListener('input', (e) => {
+      config.customName = e.target.value.trim();
+      update3DModel();
+    });
+
+    showNameToggle.addEventListener('change', (e) => {
+      config.showName = e.target.checked;
+      update3DModel();
+    });
+
+    nameStyleSelect.addEventListener('change', (e) => {
+      config.nameStyle = e.target.value;
+      update3DModel();
+    });
+
+    fontSizeSlider.addEventListener('input', (e) => {
+      config.fontSize = parseFloat(e.target.value);
+      valFontSize.textContent = `${config.fontSize.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    nameDepthSlider.addEventListener('input', (e) => {
+      config.nameDepth = parseFloat(e.target.value);
+      valNameDepth.textContent = `${config.nameDepth.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    tiltSlider.addEventListener('input', (e) => {
+      config.tilt = parseFloat(e.target.value);
+      valTilt.textContent = `${config.tilt.toFixed(1)}°`;
+      update3DModel();
+    });
+
+    rimBelowSlider.addEventListener('input', (e) => {
+      config.rimBelowPhoneTop = parseFloat(e.target.value);
+      valRimBelow.textContent = `${config.rimBelowPhoneTop.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    ledgeLenSlider.addEventListener('input', (e) => {
+      config.ledgeLen = parseFloat(e.target.value);
+      valLedgeLen.textContent = `${config.ledgeLen.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    s25CableWSlider.addEventListener('input', (e) => {
+      config.s25CableSlotW = parseFloat(e.target.value);
+      valS25CableW.textContent = `${config.s25CableSlotW.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    boatOffsetSlider.addEventListener('input', (e) => {
+      config.usbcPortX = parseFloat(e.target.value);
+      valBoatOffset.textContent = `${config.usbcPortX.toFixed(1)} mm`;
+      update3DModel();
+    });
+
+    phonePresetSelect.addEventListener('change', (e) => {
+      const p = phonePresets[e.target.value];
+      if (p) {
+        config.phoneH = p.h;
+        config.phoneW = p.w;
+        config.phoneT = p.t;
+        update3DModel();
+      }
+    });
+
+    showGhostsToggle.addEventListener('change', (e) => {
+      config.showGhosts = e.target.checked;
+      update3DModel();
+    });
+
+    // View buttons
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+      camera.position.set(130, 90, 180);
+      controls.target.set(0, 45, 10);
+    });
+    document.getElementById('btn-view-front').addEventListener('click', () => {
+      camera.position.set(0, 45, 230);
+      controls.target.set(0, 45, 0);
+    });
+    document.getElementById('btn-view-iso').addEventListener('click', () => {
+      camera.position.set(150, 120, 160);
+      controls.target.set(0, 45, 0);
+    });
+    document.getElementById('btn-view-rear').addEventListener('click', () => {
+      camera.position.set(0, 60, -220);
+      controls.target.set(0, 45, 0);
+    });
+    document.getElementById('btn-view-bottom').addEventListener('click', () => {
+      camera.position.set(0, -200, 40);
+      controls.target.set(0, 0, 40);
+    });
+
+    // Download & Copy buttons
+    document.getElementById('btn-download-scad').addEventListener('click', () => {
+      const blob = new Blob([generateScadCode()], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `boAt_PB331_Galaxy_S25_Dock_${config.customName || "custom"}.scad`;
+      a.click();
+    });
+
+    document.getElementById('btn-copy-scad').addEventListener('click', () => {
+      navigator.clipboard.writeText(generateScadCode()).then(() => {
+        const btn = document.getElementById('btn-copy-scad');
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = orig, 1800);
+      });
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (btn.dataset.tab === 'code') {
+          document.getElementById('tab-code-panel').style.display = 'block';
+          document.getElementById('tab-slicer-panel').style.display = 'none';
+        } else {
+          document.getElementById('tab-code-panel').style.display = 'none';
+          document.getElementById('tab-slicer-panel').style.display = 'block';
+        }
+      });
+    });
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      init3D();
+      update3DModel();
+    });
+  </script>
+</body>
+</html>

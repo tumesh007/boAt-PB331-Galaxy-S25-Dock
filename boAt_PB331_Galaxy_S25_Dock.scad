@@ -1,12 +1,13 @@
 // =============================================================================
-// Premium 3D-Printable Desktop Wireless Charging Stand & Dock (v1.1.0)
+// Premium 3D-Printable Desktop Wireless Charging Stand & Dock (v1.2.0)
 // Hardware: boAt EnergyShroom PB331 Magnetic Power Bank (108 x 70 x 19.5 mm + 1.5mm MagSafe Pad)
 //           Samsung Galaxy S25 in Silicone MagSafe Case (150.5 x 74.5 x 10.5 mm)
-// Updates in v1.1.0:
-//   - Accounted for additional depth of raised MagSafe pad (pocket_d = 20.8 mm, ledge = 14.0 mm)
-//   - Off-center left USB-C charging port pass-through (X = -16 mm)
-//   - Center LED battery status viewing window (5 indicator dots visible)
-//   - 100% support-free FDM printing, single-piece manifold solid (Volumes: 2)
+// Updates in v1.2.0:
+//   - Added dedicated Galaxy S25 wired charging pass-through slot (Center X = 0 mm)
+//   - Continuous under-base cable raceway routing both S25 and boAt cables out rear egress
+//   - Retained left-offset boAt USB-C charging slot (X = -16 mm) and LED battery window
+//   - Verified concentric MagSafe ring alignment (boAt PB331 sits 3.5mm deeper/lower than S25)
+//   - 100% support-free FDM printing, single-piece manifold solid
 // =============================================================================
 
 /* [Devices & Real Clearances] */
@@ -65,11 +66,23 @@ led_window_w    = 16.0;    // Center battery LED indicator window width
 cable_exit_w    = 16.0;    // Under-base exit groove width
 cable_exit_h    = 8.5;     // Under-base exit groove height
 
+// Galaxy S25 bottom wired charging port (Center X = 0mm)
+s25_cable_slot_w = 18.0;   // S25 USB-C plug pass-through slot width
+s25_cable_slot_t = 12.0;   // S25 USB-C plug forward clearance along shelf
+
 /* [Base & Anti-Tip Footprint] */
 base_w          = 110.0;   // Wide stance anti-tip base width
 base_h          = 12.0;    // Base ballast thickness
 base_extra_f    = 12.0;    // Front extension beyond dock toe
 base_extra_r    = 14.0;    // Rear extension beyond dock heel
+
+/* [Personalization / Front Nameplate] */
+show_name       = true;     // Enable custom nameplate on front of base
+custom_name     = "TUMESH"; // Name / branding text on front face
+name_style      = "deboss"; // "deboss" (engraved into face) or "emboss" (raised lettering)
+name_font_size  = 5.5;      // Text height in mm (fits within 8mm flat vertical zone)
+name_depth      = 0.8;      // Engraving / protrusion depth (mm)
+name_font       = "Arial:style=Bold"; // Font family & style
 
 /* [Friction Grip Retention] */
 enable_grip     = true;    // Side retention ribs
@@ -101,11 +114,12 @@ p0_z_offset = base_h - slab_gz(-shelf_floor, z_dock_rear);
 top_rear_y = p0_y_offset + slab_gy(pocket_h, z_dock_rear);
 base_d = top_rear_y + base_extra_r;
 
-echo("=== BOAt PB331 + GALAXY S25 DOCK (v1.1.0) ===");
+echo("=== BOAt PB331 + GALAXY S25 DOCK (v1.2.0) ===");
 echo(str("Total Base Dimensions: ", base_w, " mm (W) x ", base_d, " mm (D) x ", base_h, " mm (H)"));
 echo(str("PB331 Pocket Size: ", pocket_w, " x ", pocket_d, " x ", pocket_h, " mm"));
 echo(str("Phone Resting Shelf Depth: ", ledge_len, " mm (Fits phone + raised pad)"));
-echo(str("USB-C Charging Port Location: X = ", usbc_port_x, " mm (Left)"));
+echo(str("boAt USB-C Port Location: X = ", usbc_port_x, " mm (Left)"));
+echo("S25 Wired USB-C Cutout: X = 0.0 mm (Center dual-drop raceway)");
 
 // =============================================================================
 // MODULE DEFINITIONS
@@ -273,14 +287,22 @@ module cable_pocket_slot() {
         cube([led_window_w, shelf_floor + 2.01, pocket_d - 2.0]);
 }
 
+// S25 Center Wired Charging Cable Pass-Through:
+// Directly below Galaxy S25 bottom USB-C port (centered at X = 0.0mm)
+// Cuts vertically through shelf floor and sloped pedestal into under-base channel
+module s25_cable_slot() {
+    translate([-s25_cable_slot_w / 2, -35.0, 0.5])
+        cube([s25_cable_slot_w, ledge_y + 35.0 + 1.0, s25_cable_slot_t]);
+}
+
 // Under-Base Cable Exit Channel & Rear Egress
-// Smoothly routes cable from left USB-C port (X = -16mm) through rear egress
+// Smoothly routes cables from both boAt USB-C (X = -16mm) and Galaxy S25 (X = 0mm) out the rear
 module cable_base_channel() {
     sy = p0_y_offset + slab_gy(-shelf_floor, -pocket_d / 2);
     
-    // Main rear center exit groove
-    translate([-cable_exit_w / 2, sy - 8.0, -0.1])
-        cube([cable_exit_w, base_d - sy + 15.0, cable_exit_h]);
+    // Continuous center exit groove routing S25 drop and boAt convergence through rear egress
+    translate([-cable_exit_w / 2, 8.0, -0.1])
+        cube([cable_exit_w, base_d - 8.0 + 15.0, cable_exit_h]);
         
     // Angled channel linking left USB-C port (X = -16) to the base exit
     hull() {
@@ -290,7 +312,7 @@ module cable_base_channel() {
             cube([cable_exit_w, 14.0, cable_exit_h]);
     }
     
-    // Vertical transition into pedestal
+    // Vertical transition into pedestal for boAt port
     hull() {
         translate([usbc_port_x - cable_slot_w / 2, sy - 8.0, -0.1])
             cube([cable_slot_w, 12.0, cable_exit_h]);
@@ -329,6 +351,25 @@ module side_friction_ribs() {
     }
 }
 
+// Front Nameplate Personalization
+module front_nameplate() {
+    if (show_name && len(custom_name) > 0) {
+        if (name_style == "deboss") {
+            // Cuts 0.8mm into front vertical face of base (Y = 0)
+            translate([0, name_depth, base_h / 2])
+                rotate([90, 0, 0])
+                    linear_extrude(height = name_depth + 0.1)
+                        text(text = custom_name, size = name_font_size, font = name_font, halign = "center", valign = "center");
+        } else if (name_style == "emboss") {
+            // Protrudes 0.8mm outward from front vertical face of base (Y = 0)
+            translate([0, 0.01, base_h / 2])
+                rotate([90, 0, 0])
+                    linear_extrude(height = name_depth)
+                        text(text = custom_name, size = name_font_size, font = name_font, halign = "center", valign = "center");
+        }
+    }
+}
+
 // =============================================================================
 // MAIN ASSEMBLY
 // =============================================================================
@@ -343,14 +384,21 @@ module complete_dock() {
                 cradle_blank();
                 side_friction_ribs();
             }
+            if (name_style == "emboss") {
+                front_nameplate();
+            }
         }
         to_slab() {
             pb_pocket_cavity();
             ventilation_cutout();
             cable_pocket_slot();
+            s25_cable_slot();
             phone_shelf_notch();
         }
         cable_base_channel();
+        if (name_style == "deboss") {
+            front_nameplate();
+        }
     }
 }
 

@@ -14,6 +14,27 @@ Designed for single-piece, **100% support-free FDM 3D printing**, rock-solid des
 
 ---
 
+## What's New in v1.2.0 (Front Nameplate, Galaxy S25 Wired Charging & Webapp)
+
+* **Personalized Front Nameplate (`TUMESH`):**
+  * Added parametric front nameplate personalization (`custom_name = "TUMESH"`).
+  * Debossed $0.8\text{ mm}$ into the $8\text{ mm}$ tall vertical front face of the dock base ($Z = 6.0\text{ mm}$). Prints $100\%$ support-free with clean perimeter lines on Bambu Lab A1 Mini.
+  * Supports toggling between debossed (engraved) and embossed (raised) styles.
+* **Interactive 3D Customizer Webapp (`index.html`):**
+  * Built an interactive Three.js 3D web application with real-time orbit controls, device ghost previews, live MagSafe alignment math, parametric sliders, and instant `.scad` code generation.
+  * Run locally via `python start_webapp.py` or double-click `index.html`. Deployable directly to GitHub Pages.
+* **Dedicated Galaxy S25 Wired Charging Cutout ($X = 0\text{ mm}$):**
+  * Added an $18.0\text{ mm} \times 12.0\text{ mm}$ vertical pass-through slot directly beneath the Galaxy S25's USB-C charging port.
+  * Cuts cleanly through the forward resting shelf and internal sloped pedestal into the under-base channel, providing ample clearance for rigid USB-C connector housings ($25 - 30\text{ mm}$ long).
+* **Dual-Cable Under-Base Raceway:**
+  * The under-base cable channel now extends continuously along the center ($X = 0\text{ mm}$) to receive the S25 wired charging cable, while preserving the left-angled convergence from the boAt PB331 port ($X = -16.0\text{ mm}$).
+  * Both cables can be routed simultaneously through the shared rear egress ($16.0 \times 8.5\text{ mm}$) with zero desk clutter.
+* **Verified Physical Concentric MagSafe Alignment:**
+  * When magnetically locked, the boAt PB331 sits **$3.5\text{ mm}$ deeper/lower** than the bottom of the cased Galaxy S25.
+  * At the top, the Galaxy S25 extends **$46.0\text{ mm}$** above the power bank rim, providing a safe $3.0\text{ mm}$ air gap below the camera bump.
+
+---
+
 ## What's New in v1.1.0 (Hardware Alignment Updates)
 
 * **Accounted for Additional Power Bank Depth:**
