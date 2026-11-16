@@ -28,7 +28,13 @@ pocket_h        = pb_h + tol_h;          // 108.8 mm
 
 /* [Ergonomics & Camera Clearance] */
 tilt            = 65.0;    // Viewing angle (65 deg backward from desk)
-rim_below_phone_top = 48.0;// 48mm guarantees complete rear camera bump clearance
+// Magnetic Ring Concentric Alignment & Camera Clearance:
+// - PB331 MagSafe ring center: 30.5mm below top rim of power bank (measured from photo)
+// - Galaxy S25 MagSafe ring center: 76.5mm below top of cased phone (74.0mm from bottom)
+// - S25 Camera bump extends: 43.0mm from top
+// Perfectly concentric alignment: 76.5 - 30.5 = 46.0 mm
+// At 46.0mm: Ring offset = 0.0 mm (Peak 15W Qi lock) & Camera air clearance = 3.0 mm!
+rim_below_phone_top = 46.0;
 
 /* [Phone Resting Ledge (Expanded for Additional Depth)] */
 // 14.0mm forward depth accommodates 10.5mm phone + 1.5mm raised MagSafe pad + 2.0mm clearance
