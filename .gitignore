@@ -1,0 +1,10 @@
+# Temporary & scratch files
+temp.*
+test_*
+render_*.py
+original_*
+*.stl.bak
+*.scad.bak
+*.pyc
+__pycache__/
+.DS_Store
