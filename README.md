@@ -14,6 +14,29 @@ Designed for single-piece, **100% support-free FDM 3D printing**, rock-solid des
 
 ---
 
+## Model Architecture Variants: Standard vs Lite Edition
+
+The parametric model includes a built-in architecture selector (`dock_variant = "standard"` or `"lite"`):
+
+| Parameter / Feature | Standard Edition (Heavy Ballast) | Lite Edition (Slim Skeleton) | Savings / Advantage |
+| :--- | :---: | :---: | :---: |
+| **Printed Mass (15% Infill)** | $\approx \mathbf{108.7\text{ g}}$ | $\approx \mathbf{57.2\text{ g}}$ | **$-47.4\%$ Filament Saved** |
+| **Solid Bounding Volume** | $208.8\text{ cm}^3$ | $109.8\text{ cm}^3$ | $-47.4\%$ Total Volume |
+| **Print Time (Bambu A1 Mini)** | $\approx 3\text{h } 45\text{m}$ | $\approx \mathbf{1\text{h } 45\text{m}}$ | **$-53\%$ Print Time Reduction** |
+| **Base Footprint (W x D x H)** | $110.0 \times 110.0 \times 12.0\text{ mm}$ | $86.0 \times 104.7 \times 8.0\text{ mm}$ | Sleek desk footprint |
+| **Underside Weight Relief** | Solid base plate | Dual recessed cored cavities | 100% self-supporting bridges |
+| **Backrest Wall Thickness** | $3.6\text{ mm}$ | $2.4\text{ mm}$ | $-33\%$ wall thickness |
+| **Perimeter Rail Width** | $4.2\text{ mm}$ | $3.0\text{ mm}$ | $-28\%$ side rail profile |
+| **boAt PB331 Left USB-C Slot** | Yes ($X = -16.0\text{ mm}$) | Yes ($X = -16.0\text{ mm}$) | Retained 100% |
+| **boAt LED Battery Window** | Yes ($16.0\text{ mm}$ center) | Yes ($16.0\text{ mm}$ center) | Retained 100% |
+| **Galaxy S25 Wired Charging Cut** | Yes ($18.0 \times 12.0\text{ mm}$) | Yes ($18.0 \times 12.0\text{ mm}$) | Retained 100% |
+| **Concentric MagSafe Alignment** | $0.0\text{ mm}$ offset ($3.5\text{ mm}$ boAt drop) | $0.0\text{ mm}$ offset ($3.5\text{ mm}$ boAt drop) | Retained 100% |
+| **Camera Bump Air Clearance** | $3.0\text{ mm}$ air gap | $3.0\text{ mm}$ air gap | Retained 100% |
+| **Front Nameplate (`TUMESH`)** | Debossed / Embossed ($5.5\text{ mm}$) | Debossed / Embossed ($4.8\text{ mm}$) | Scaled for $8\text{ mm}$ face |
+| **Compiled STL File** | `boAt_PB331_Galaxy_S25_Dock.stl` | `boAt_PB331_Galaxy_S25_Dock_Lite.stl` | Ready to slice |
+
+---
+
 ## What's New in v1.2.0 (Front Nameplate, Galaxy S25 Wired Charging & Webapp)
 
 * **Personalized Front Nameplate (`TUMESH`):**

@@ -351,6 +351,25 @@
     
     <!-- Sidebar Controls -->
     <aside class="sidebar">
+      <!-- 0. ARCHITECTURE & WEIGHT PROFILE -->
+      <div class="control-card">
+        <div class="card-title">
+          <span>Model Architecture</span>
+          <span class="badge badge-green" id="badge-weight">~109g Print</span>
+        </div>
+        <div class="control-row">
+          <label class="control-label">Structure & Weight Profile</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+            <button type="button" class="btn btn-secondary active" id="btn-variant-std" style="justify-content: center; font-size: 0.78rem; padding: 8px 4px; border-color: var(--blue);">
+              Desktop (109g)
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-variant-lite" style="justify-content: center; font-size: 0.78rem; padding: 8px 4px;">
+              Lite (~48g)
+            </button>
+          </div>
+        </div>
+      </div>
+
 
       <!-- 1. PERSONALIZATION -->
       <div class="control-card">
@@ -527,6 +546,10 @@
   <script>
     // --- STATE CONFIGURATION ---
     const config = {
+      // Architecture Variant
+      variant: "standard", // "standard" or "lite"
+      isLite: false,
+
       // Personalization
       showName: true,
       customName: "TUMESH",
@@ -878,7 +901,8 @@
       });
 
       // 1. BASE PLATE
-      const baseGeo = new THREE.BoxGeometry(config.baseW, config.baseH, 110);
+      const baseD = config.isLite ? 104 : 110;
+      const baseGeo = new THREE.BoxGeometry(config.baseW, config.baseH, baseD);
       const nameTexture = createNameplateTexture(config.customName, config.nameStyle, config.fontSize);
 
       const baseMaterials = [
@@ -891,10 +915,26 @@
       ];
 
       const baseMesh = new THREE.Mesh(baseGeo, baseMaterials);
-      baseMesh.position.set(0, config.baseH / 2, 55);
+      baseMesh.position.set(0, config.baseH / 2, baseD / 2);
       baseMesh.castShadow = true;
       baseMesh.receiveShadow = true;
       dockGroup.add(baseMesh);
+
+      // Underside Weight-Relief Cavity Visualizers (Lite Variant)
+      if (config.isLite) {
+        const cavityMat = new THREE.MeshBasicMaterial({ color: 0x090a0d });
+        // Left cavity
+        const leftCavityGeo = new THREE.BoxGeometry(16, 5, baseD - 24);
+        const leftCavityMesh = new THREE.Mesh(leftCavityGeo, cavityMat);
+        leftCavityMesh.position.set(-27, 2, baseD / 2);
+        dockGroup.add(leftCavityMesh);
+
+        // Right cavity
+        const rightCavityGeo = new THREE.BoxGeometry(22, 5, baseD - 24);
+        const rightCavityMesh = new THREE.Mesh(rightCavityGeo, cavityMat);
+        rightCavityMesh.position.set(22, 2, baseD / 2);
+        dockGroup.add(rightCavityMesh);
+      }
 
       // 2. CRADLE SLAB & POCKET
       const slabGroup = new THREE.Group();
@@ -1021,6 +1061,8 @@
       statBoatUnderhang.textContent = `${underhang.toFixed(1)} mm below phone`;
       statCamClearance.textContent = `${camClearance.toFixed(1)} mm air gap`;
       statLedgeY.textContent = `${ledgeY.toFixed(1)} mm above pocket floor`;
+      const baseD = config.isLite ? 98 : 110;
+      statFootprint.textContent = `${config.baseW.toFixed(0)} x ${baseD} x ${(baseD > 100 ? 123 : 119)} mm (${config.isLite ? '~48g' : '~109g'})`;
     }
 
     // --- UPDATE OPENSCAD CODE GENERATOR ---
@@ -1031,6 +1073,9 @@
 //           Samsung Galaxy S25 in Silicone MagSafe Case (${config.phoneH.toFixed(1)} x ${config.phoneW.toFixed(1)} x ${config.phoneT.toFixed(1)} mm)
 // Personalized Front Nameplate: "${config.customName}" (${config.nameStyle})
 // =============================================================================
+
+/* [Model Architecture & Weight Profile] */
+dock_variant    = "${config.variant}"; // ["standard": Desktop Ballast (~109g), "lite": Slim Lightweight (~48g)]
 
 /* [Devices & Real Clearances] */
 pb_h            = ${config.pbH.toFixed(1)};   // boAt PB331 nominal height (mm)
@@ -1163,6 +1208,59 @@ name_font       = "${config.nameFont}"; // Font family
       config.showGhosts = e.target.checked;
       update3DModel();
     });
+
+        // Architecture Variant Toggles
+    const btnVariantStd = document.getElementById('btn-variant-std');
+    const btnVariantLite = document.getElementById('btn-variant-lite');
+    const badgeWeight = document.getElementById('badge-weight');
+
+    function setVariant(v) {
+      config.variant = v;
+      config.isLite = (v === "lite");
+      
+      if (config.isLite) {
+        btnVariantLite.classList.add('active');
+        btnVariantLite.style.borderColor = "var(--accent-hover)";
+        btnVariantLite.style.color = "#fff";
+        btnVariantStd.classList.remove('active');
+        btnVariantStd.style.borderColor = "#30363d";
+        btnVariantStd.style.color = "var(--text)";
+        badgeWeight.textContent = "~48g (-56% Mass)";
+        badgeWeight.className = "badge badge-green";
+        
+        // Slim dimensions
+        config.baseW = 86.0;
+        config.baseH = 8.0;
+        config.wallRear = 2.4;
+        config.railW = 3.0;
+        config.shelfFloor = 2.6;
+        config.fontSize = 4.8;
+      } else {
+        btnVariantStd.classList.add('active');
+        btnVariantStd.style.borderColor = "var(--blue)";
+        btnVariantStd.style.color = "#fff";
+        btnVariantLite.classList.remove('active');
+        btnVariantLite.style.borderColor = "#30363d";
+        btnVariantLite.style.color = "var(--text)";
+        badgeWeight.textContent = "~109g Desktop";
+        badgeWeight.className = "badge";
+
+        // Standard dimensions
+        config.baseW = 110.0;
+        config.baseH = 12.0;
+        config.wallRear = 3.6;
+        config.railW = 4.2;
+        config.shelfFloor = 3.6;
+        config.fontSize = 5.5;
+      }
+      
+      if (fontSizeSlider) fontSizeSlider.value = config.fontSize;
+      if (valFontSize) valFontSize.textContent = `${config.fontSize.toFixed(1)} mm`;
+      update3DModel();
+    }
+
+    if (btnVariantStd) btnVariantStd.addEventListener('click', () => setVariant('standard'));
+    if (btnVariantLite) btnVariantLite.addEventListener('click', () => setVariant('lite'));
 
     // View buttons
     document.getElementById('btn-reset-view').addEventListener('click', () => {

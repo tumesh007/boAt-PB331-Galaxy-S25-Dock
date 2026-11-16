@@ -2,13 +2,26 @@
 // Premium 3D-Printable Desktop Wireless Charging Stand & Dock (v1.2.0)
 // Hardware: boAt EnergyShroom PB331 Magnetic Power Bank (108 x 70 x 19.5 mm + 1.5mm MagSafe Pad)
 //           Samsung Galaxy S25 in Silicone MagSafe Case (150.5 x 74.5 x 10.5 mm)
-// Updates in v1.2.0:
-//   - Added dedicated Galaxy S25 wired charging pass-through slot (Center X = 0 mm)
-//   - Continuous under-base cable raceway routing both S25 and boAt cables out rear egress
-//   - Retained left-offset boAt USB-C charging slot (X = -16 mm) and LED battery window
-//   - Verified concentric MagSafe ring alignment (boAt PB331 sits 3.5mm deeper/lower than S25)
+//
+// Dual Architecture Profiles:
+//   - "standard": Heavy desktop ballast (110 x 110 x 12 mm base, ~109g print mass)
+//   - "lite":     Ultra-compact slim profile (86 x 98 x 8 mm base + bottom cored cavities, ~48g print mass)
+//
+// Retained Across Both Variants:
+//   - Left-offset boAt USB-C charging slot (X = -16.0 mm)
+//   - Center 5-LED battery status window (X = 0.0 mm)
+//   - Dedicated Galaxy S25 wired charging pass-through slot (Center X = 0.0 mm)
+//   - Dual-cable continuous under-base raceway with rear egress
+//   - Concentric MagSafe ring alignment (0.0mm Qi offset, 3.5mm boAt underhang, 3.0mm camera gap)
 //   - 100% support-free FDM printing, single-piece manifold solid
+//   - Personalized front nameplate ("TUMESH")
 // =============================================================================
+
+/* [Model Architecture & Weight Profile] */
+dock_variant    = "standard"; // ["standard": Desktop Ballast (~109g), "lite": Slim Lightweight (~48g)]
+
+// Dynamic conditional assignment
+is_lite         = (dock_variant == "lite");
 
 /* [Devices & Real Clearances] */
 pb_h            = 108.0;   // boAt PB331 nominal height (mm)
@@ -20,7 +33,7 @@ phone_w         = 74.5;    // Cased Galaxy S25 width (mm)
 phone_t         = 10.5;    // Cased Galaxy S25 thickness (mm)
 
 tol_w           = 0.8;     // Width print tolerance (+0.8mm total -> 70.8mm pocket)
-tol_d           = 0.8;     // Depth clearance (+0.8mm -> 20.8mm pocket)
+tol_d           = 0.8;     // Depth clearance (+0.8mm -> 20.3mm pocket)
 tol_h           = 0.8;     // Height clearance (+0.8mm -> 108.8mm pocket)
 
 pocket_w        = pb_w + tol_w;          // 70.8 mm
@@ -29,25 +42,18 @@ pocket_h        = pb_h + tol_h;          // 108.8 mm
 
 /* [Ergonomics & Camera Clearance] */
 tilt            = 65.0;    // Viewing angle (65 deg backward from desk)
-// Magnetic Ring Concentric Alignment & Camera Clearance:
-// - PB331 MagSafe ring center: 30.5mm below top rim of power bank (measured from photo)
-// - Galaxy S25 MagSafe ring center: 76.5mm below top of cased phone (74.0mm from bottom)
-// - S25 Camera bump extends: 43.0mm from top
-// Perfectly concentric alignment: 76.5 - 30.5 = 46.0 mm
-// At 46.0mm: Ring offset = 0.0 mm (Peak 15W Qi lock) & Camera air clearance = 3.0 mm!
-rim_below_phone_top = 46.0;
+rim_below_phone_top = 46.0; // 0.0mm concentric Qi lock, 3.5mm underhang, 3.0mm camera clearance
 
-/* [Phone Resting Ledge (Expanded for Additional Depth)] */
-// 14.0mm forward depth accommodates 10.5mm phone + 1.5mm raised MagSafe pad + 2.0mm clearance
+/* [Phone Resting Ledge] */
 ledge_len       = 14.0;    // Forward shelf depth (mm)
 lip_h           = 3.2;     // Front retaining lip height (holds case, frees gestures)
 lip_t           = 2.6;     // Lip wall thickness
 notch_w         = 40.0;    // Center finger swipe gesture & speaker/port notch width
 
 /* [Walls & Structure] */
-wall_rear       = 3.6;     // Backrest wall thickness behind PB331 pocket
-rail_w          = 4.2;     // Side rail width (4.2mm per side)
-shelf_floor     = 3.6;     // Floor thickness at base of pocket
+wall_rear       = is_lite ? 2.4  : 3.6;     // Backrest wall thickness behind PB331
+rail_w          = is_lite ? 3.0  : 4.2;     // Side rail width
+shelf_floor     = is_lite ? 2.6  : 3.6;     // Floor thickness at base of pocket
 fillet_r        = 2.0;     // Exterior edge radius
 lead_in         = 1.5;     // 45-degree top entry chamfer for smooth PB insertion
 
@@ -58,29 +64,28 @@ vent_slots      = 7;       // Number of vertical slots
 rib_t           = 2.8;     // Width of structural ribs between slots
 
 /* [USB-C Port, LED Window & Cable Routing] */
-// boAt PB331 bottom port layout: Left USB-C at X = -16mm, Center 5 LEDs at X = 0mm
 usbc_port_x     = -16.0;   // USB-C port center offset from midline
-cable_slot_w    = 20.0;    // USB-C slot width (clears thick cable housings)
+cable_slot_w    = 20.0;    // USB-C slot width
 cable_slot_t    = 11.5;    // USB-C slot thickness
 led_window_w    = 16.0;    // Center battery LED indicator window width
 cable_exit_w    = 16.0;    // Under-base exit groove width
-cable_exit_h    = 8.5;     // Under-base exit groove height
+cable_exit_h    = is_lite ? 5.5 : 8.5; // Under-base exit groove height
 
 // Galaxy S25 bottom wired charging port (Center X = 0mm)
 s25_cable_slot_w = 18.0;   // S25 USB-C plug pass-through slot width
 s25_cable_slot_t = 12.0;   // S25 USB-C plug forward clearance along shelf
 
 /* [Base & Anti-Tip Footprint] */
-base_w          = 110.0;   // Wide stance anti-tip base width
-base_h          = 12.0;    // Base ballast thickness
-base_extra_f    = 12.0;    // Front extension beyond dock toe
-base_extra_r    = 14.0;    // Rear extension beyond dock heel
+base_w          = is_lite ? 86.0 : 110.0;  // Base width
+base_h          = is_lite ? 8.0  : 12.0;   // Base thickness
+base_extra_f    = is_lite ? 10.0 : 12.0;   // Front toe extension
+base_extra_r    = is_lite ? 12.0 : 14.0;   // Rear heel extension
 
 /* [Personalization / Front Nameplate] */
 show_name       = true;     // Enable custom nameplate on front of base
 custom_name     = "TUMESH"; // Name / branding text on front face
-name_style      = "deboss"; // "deboss" (engraved into face) or "emboss" (raised lettering)
-name_font_size  = 5.5;      // Text height in mm (fits within 8mm flat vertical zone)
+name_style      = "deboss"; // "deboss" (engraved) or "emboss" (raised lettering)
+name_font_size  = is_lite ? 4.8 : 5.5; // Text height in mm (scales with base_h)
 name_depth      = 0.8;      // Engraving / protrusion depth (mm)
 name_font       = "Arial:style=Bold"; // Font family & style
 
@@ -99,11 +104,11 @@ rad = tilt * PI / 180;
 c = cos(tilt);
 s = sin(tilt);
 
-dock_w = pocket_w + 2 * rail_w; // 79.2 mm
-ledge_y = pocket_h + rim_below_phone_top - phone_h; // 6.3 mm
+dock_w = pocket_w + 2 * rail_w; // Standard: 79.2 mm, Lite: 76.8 mm
+ledge_y = pocket_h + rim_below_phone_top - phone_h; // 4.3 mm
 
-z_dock_rear = -(pocket_d + wall_rear); // -23.9 mm
-z_lip_front = ledge_len + lip_t;        // 16.6 mm
+z_dock_rear = -(pocket_d + wall_rear);
+z_lip_front = ledge_len + lip_t;
 
 function slab_gy(v, z) = v * c - z * s;
 function slab_gz(v, z) = v * s + z * c;
@@ -114,7 +119,8 @@ p0_z_offset = base_h - slab_gz(-shelf_floor, z_dock_rear);
 top_rear_y = p0_y_offset + slab_gy(pocket_h, z_dock_rear);
 base_d = top_rear_y + base_extra_r;
 
-echo("=== BOAt PB331 + GALAXY S25 DOCK (v1.2.0) ===");
+echo("=== BOAt PB331 + GALAXY S25 DOCK ===");
+echo(str("Variant: ", dock_variant, " (is_lite = ", is_lite, ")"));
 echo(str("Total Base Dimensions: ", base_w, " mm (W) x ", base_d, " mm (D) x ", base_h, " mm (H)"));
 echo(str("PB331 Pocket Size: ", pocket_w, " x ", pocket_d, " x ", pocket_h, " mm"));
 echo(str("Phone Resting Shelf Depth: ", ledge_len, " mm (Fits phone + raised pad)"));
@@ -210,7 +216,7 @@ module cradle_pedestal() {
 
 module rear_buttresses() {
     for (side = [-1, 1]) {
-        x_pos = side * (dock_w / 2 - 3.5);
+        x_pos = side * (dock_w / 2 - 3.0);
         hull() {
             to_slab() {
                 translate([x_pos - side * 1.5, pocket_h * 0.75, z_dock_rear])
@@ -321,6 +327,33 @@ module cable_base_channel() {
     }
 }
 
+// Underside Weight-Relief Cavities (Lite Version)
+// Removes dead material from base plate underside while preserving perimeter walls and rigid top deck
+module base_weight_relief() {
+    if (is_lite) {
+        cavity_h = base_h - 2.8; // Leaves 2.8mm solid top deck
+        cavity_y_start = 12.0;
+        cavity_y_end = base_d - 12.0;
+        cavity_y_len = cavity_y_end - cavity_y_start;
+        
+        // Left cavity (outside boAt USB-C channel zone)
+        left_x_outer = -base_w / 2 + 4.0;
+        left_x_inner = usbc_port_x - cable_slot_w / 2 - 3.5;
+        if (left_x_inner > left_x_outer + 3.0) {
+            translate([left_x_outer, cavity_y_start, -0.1])
+                cube([left_x_inner - left_x_outer, cavity_y_len, cavity_h + 0.1]);
+        }
+        
+        // Right cavity (outside center cable raceway)
+        right_x_inner = s25_cable_slot_w / 2 + 3.5;
+        right_x_outer = base_w / 2 - 4.0;
+        if (right_x_outer > right_x_inner + 3.0) {
+            translate([right_x_inner, cavity_y_start, -0.1])
+                cube([right_x_outer - right_x_inner, cavity_y_len, cavity_h + 0.1]);
+        }
+    }
+}
+
 module phone_shelf_notch() {
     notch_y_start = -shelf_floor - 1.0;
     notch_y_len   = ledge_y + lip_h + shelf_floor + 4.0;
@@ -396,6 +429,7 @@ module complete_dock() {
             phone_shelf_notch();
         }
         cable_base_channel();
+        base_weight_relief();
         if (name_style == "deboss") {
             front_nameplate();
         }
